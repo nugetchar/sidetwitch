@@ -36,7 +36,7 @@ let startWidthResize, startHeightResize;
 chrome.runtime.onMessage.addListener(function (message) {
     if (message.type) {
         if (message.type === createType) {
-            playerInfos = playerInfos || message.playerInfos;
+            playerInfos = message.playerInfos || player;
             startVideo(message.text, message.isHidden);
         } else if (message.type === removeType) {
             clearPage();
