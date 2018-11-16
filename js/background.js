@@ -7,6 +7,7 @@ const pauseType = 'PAUSE_CHANNEL';
 const hideType = 'HIDE_CHANNEL';
 const changeHostType = 'CHANGE_HOST_CHANNEL';
 const updatePlayerInfosType = 'UPDATE_PLAYER_INFOS';
+const toggleCommand = 'toggle-display';
 
 let currentChannel = '';
 let isHidden = false;
@@ -113,7 +114,8 @@ function notifyContainerDeletion() {
 
 // Player hidding feature
 chrome.commands.onCommand.addListener(function (command) {
-    if (command === "toggle-display") {
+    console.info('Received command', command);
+    if (command === toggleCommand) {
         isHidden = !isHidden
         // Send a message to every content-script asking to pause and hide.
         chrome.tabs.query({ active: true, currentWindow: true }, function (tabs) {
@@ -121,7 +123,7 @@ chrome.commands.onCommand.addListener(function (command) {
                 chrome.tabs.sendMessage(
                     tabs[i].id,
                     { type: hideType },
-                    () => { }
+                    () => {}
                 )
             }
         });
@@ -130,7 +132,7 @@ chrome.commands.onCommand.addListener(function (command) {
                 chrome.tabs.sendMessage(
                     tabs[i].id,
                     { type: hideType },
-                    () => { }
+                    () => {}
                 )
             }
         })

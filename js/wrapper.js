@@ -14,8 +14,8 @@ const defaultHeight = '300';
 
 function PlayerInfos () {
     return {
-        x: 0,
-        y: 0,
+        x: 10,
+        y: 10,
         width: defaultWidth,
         height: defaultHeight
     };
@@ -36,12 +36,12 @@ let startWidthResize, startHeightResize;
 chrome.runtime.onMessage.addListener(function (message) {
     if (message.type) {
         if (message.type === createType) {
-            playerInfos = message.playerInfos || player;
+            playerInfos = message.playerInfos || playerInfos;
             startVideo(message.text, message.isHidden);
         } else if (message.type === removeType) {
             clearPage();
         } else if (message.type === pauseType) {
-            player.pause();
+            pausePlayer();
         } else if (message.type === hideType) {
             togglePlayer();
         } else if (message.type === updatePlayerInfosType) {
@@ -50,6 +50,12 @@ chrome.runtime.onMessage.addListener(function (message) {
         }
     }
 });
+
+function pausePlayer(){
+    if (player) {
+        player.pause();
+    }
+}
 
 function startVideo(channelId, isHidden) {
     let elem = document.getElementById(containerId);
@@ -65,7 +71,7 @@ function startVideo(channelId, isHidden) {
 
 function clearPage() {
     let elem = document.getElementById(containerId);
-    if (elem != null) {
+    if (elem !== null) {
         elem.parentNode.removeChild(elem);
     }
     player = null;
@@ -74,14 +80,14 @@ function clearPage() {
 
 function togglePlayer() {
     let elem = document.getElementById(containerId);
-    if (elem) {
+    if (!!elem) {
         if (elem.style.display === 'none') {
             // Show player
             player.play();
             elem.style.display = 'block'
         } else {
             // Hide player
-            player.pause();
+            pausePlayer();
             elem.style.display = 'none'
         }
     }
@@ -103,7 +109,6 @@ function updatePlayerInfos() {
         playerInfos.x = clientRect.left;
         playerInfos.y = clientRect.top;
 
-        console.info('sending player infos', playerInfos);
         chrome.runtime.sendMessage({ type: updatePlayerInfosType, playerInfos });
     }
 }
@@ -220,12 +225,15 @@ function createContainer(channelId, isHidden) {
         player = embed.getPlayer();
         player.play();
     });
-    embed.addEventListener(Twitch.Embed.VIDEO_PLAY, () => {
+
+    embed.addEventListener(Twitch.Embed.VIDEO_PLAY, (e) => {
         if (channelId !== player.getChannel()) {
             chrome.runtime.sendMessage({ type: changeHostType, channelId: player.getChannel() });
         }
     });
 }
+
+
 /*
 * Code from https://medium.com/the-z/making-a-resizable-div-in-js-is-not-easy-as-you-think-bda19a1bc53d
 */
